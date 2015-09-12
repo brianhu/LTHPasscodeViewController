@@ -1290,8 +1290,22 @@ options:NSNumericSearch] != NSOrderedAscending)
 	_failedAttemptLabel.backgroundColor	= _failedAttemptLabelBackgroundColor;
 	_failedAttemptLabel.textColor = _failedAttemptLabelTextColor;
     if (_failedAttempts == 0) _failedAttemptLabel.hidden = YES;
-	
+    
+    // Make sure nav bar for logout is off the screen
+    if (!_isUsingNavbar) {
+        [self.navBar removeFromSuperview];
+        self.navBar = nil;
+    }
+    _isUsingNavbar = NO;
+    
+    _OKButton.hidden = YES;
 	_passcodeTextField.text = @"";
+    
+    if (![LTHPasscodeViewController doesPasscodeExist] && !_isUserConfirmingPasscode) {
+        _enterPasscodeLabel.text = NSLocalizedStringFromTable(self.setPasscodeToProtectionString, _localizationTableName, @"");
+        return;
+    }
+
 	if (_isUserConfirmingPasscode) {
 		if (_isUserEnablingPasscode) {
             _enterPasscodeLabel.text = NSLocalizedStringFromTable(self.reenterPasscodeString, _localizationTableName, @"");
@@ -1312,15 +1326,6 @@ options:NSNumericSearch] != NSOrderedAscending)
             _enterPasscodeLabel.text = NSLocalizedStringFromTable(self.enterPasscodeString, _localizationTableName, @"");
         }
     }
-	
-	// Make sure nav bar for logout is off the screen
-    if (!_isUsingNavbar) {
-        [self.navBar removeFromSuperview];
-        self.navBar = nil;
-    }
-    _isUsingNavbar = NO;
-    
-    _OKButton.hidden = YES;
 }
 
 
@@ -1332,14 +1337,18 @@ options:NSNumericSearch] != NSOrderedAscending)
 	NSString *savedPasscode = [LTHKeychainUtils getPasswordForUsername: _keychainPasscodeUsername
 														 andServiceName: _keychainServiceName
 																  error: nil];
+    _failedAttemptLabel.hidden = NO;
+    _failedAttemptLabel.text = NSLocalizedStringFromTable(@"Passcodes did not match. Try again.", _localizationTableName, @"");
+    _failedAttemptLabel.backgroundColor = [UIColor clearColor];
+    _failedAttemptLabel.layer.borderWidth = 0;
+    _failedAttemptLabel.layer.borderColor = [UIColor clearColor].CGColor;
+    _failedAttemptLabel.textColor = _labelTextColor;
+    
+    if (![LTHPasscodeViewController doesPasscodeExist] && !_isUserConfirmingPasscode) {
+        _enterPasscodeLabel.text = NSLocalizedStringFromTable(self.setPasscodeToProtectionString, _localizationTableName, @"");
+        return;
+    }
 	_enterPasscodeLabel.text = savedPasscode.length == 0 ? NSLocalizedStringFromTable(self.enterPasscodeString, _localizationTableName, @"") : NSLocalizedStringFromTable(self.enterNewPasscodeString, _localizationTableName, @"");
-	
-	_failedAttemptLabel.hidden = NO;
-	_failedAttemptLabel.text = NSLocalizedStringFromTable(@"Passcodes did not match. Try again.", _localizationTableName, @"");
-	_failedAttemptLabel.backgroundColor = [UIColor clearColor];
-	_failedAttemptLabel.layer.borderWidth = 0;
-	_failedAttemptLabel.layer.borderColor = [UIColor clearColor].CGColor;
-	_failedAttemptLabel.textColor = _labelTextColor;
 }
 
 
@@ -1514,6 +1523,7 @@ options:NSNumericSearch] != NSOrderedAscending)
 - (void)_loadStringDefaults {
     self.enterOldPasscodeString = @"Enter your old passcode";
     self.enterPasscodeString = @"Enter your passcode";
+    self.setPasscodeToProtectionString = @"Set passcode to protect My Posts and Favorite Posts";
     self.enablePasscodeString = @"Enable Passcode";
     self.changePasscodeString = @"Change Passcode";
     self.turnOffPasscodeString = @"Turn Off Passcode";

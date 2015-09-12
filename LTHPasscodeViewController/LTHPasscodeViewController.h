@@ -199,6 +199,7 @@
  @brief The string displayed when entering your passcode.
  */
 @property (nonatomic, strong) NSString *enterPasscodeString;
+@property (nonatomic, strong) NSString *setPasscodeToProtectionString;
 /**
  @brief The string displayed when entering your new passcode (while changing).
  */
